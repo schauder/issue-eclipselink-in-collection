@@ -14,6 +14,7 @@ import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -52,24 +53,33 @@ public class SimpleEntityTest {
 	}
 
 	@Test
-	public void inCriteriaApiWithNonEmptyListDirectParameterSetting() {
+	public void inCriteriaApiWithNonEmptyList() {
 
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SimpleEntity> criteriaQuery = cb.createQuery(SimpleEntity.class);
 		Root<SimpleEntity> root = criteriaQuery.from(SimpleEntity.class);
-		criteriaQuery.select(root).where(root.get("id").in(cb.parameter(Collection.class, "ids")));
+		ParameterExpression<Collection> parameter1 = cb.parameter(Collection.class);
+		criteriaQuery.select(root).where(root.get("id").in(parameter1));
 
-		TypedQuery<SimpleEntity> query = em.createQuery(criteriaQuery);
+		TypedQuery<SimpleEntity> typedQuery = em.createQuery(criteriaQuery);
 
-		List<SimpleEntity> result = query
-				.setParameter("ids", Arrays.asList(23L, 42L))
+
+		Set<ParameterExpression<?>> parameters = criteriaQuery.getParameters();
+		assertThat(parameters).hasSize(1);
+
+		for (ParameterExpression parameter : parameters) {
+			typedQuery.setParameter(parameter, Arrays.asList(23L, 42L));
+		}
+
+
+		List<SimpleEntity> result = typedQuery
 				.getResultList();
 
 		assertThat(result).hasSize(2);
 	}
 
 	@Test
-	public void inCriteriaApiWithNonEmptyList() {
+	public void inCriteriaApiWithNonEmptyIterable() {
 
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SimpleEntity> criteriaQuery = cb.createQuery(SimpleEntity.class);
