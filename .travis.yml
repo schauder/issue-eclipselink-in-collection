@@ -1,0 +1,25 @@
+language: java
+
+matrix:
+  include:
+    - env: PROFILE=el-273,hsql-240
+    - env: PROFILE=el-272,hsql-240
+    - env: PROFILE=el-273,hsql-228
+    - env: PROFILE=el-272,hsql-228
+
+addons:
+  apt:
+    packages:
+    - oracle-java8-installer
+
+cache:
+  directories:
+    - $HOME/.m2
+
+sudo: false
+
+install: true
+
+script:
+  - "mvn -version"
+  - "mvn clean test dependency:list -U -P${PROFILE}"
