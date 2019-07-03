@@ -14,7 +14,6 @@ import javax.persistence.criteria.ParameterExpression;
 import javax.persistence.criteria.Root;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -28,9 +27,6 @@ import static org.assertj.core.api.Assertions.*;
  * @author Jens Schauder
  */
 public class SimpleEntityTest {
-
-	private static final String SELECT_WITH_IN_CLAUSE = "SELECT se FROM SimpleEntity se WHERE se.id IN :ids";
-	private static final String SELECT_WITH_IN_CLAUSE_IN_PARENS = "SELECT se FROM SimpleEntity se WHERE se.id IN (:ids)";
 
 	EntityManager em;
 
@@ -54,12 +50,21 @@ public class SimpleEntityTest {
 
 	@Test
 	public void inCriteriaApiWithNonEmptyList() {
+		runTestWithParameterType(Collection.class);
+	}
+
+	@Test
+	public void inCriteriaApiWithNonEmptyIterable() {
+
+		runTestWithParameterType(Iterable.class);
+	}
+
+	private void runTestWithParameterType(Class<?> parameterType) {
 
 		CriteriaBuilder cb = em.getCriteriaBuilder();
 		CriteriaQuery<SimpleEntity> criteriaQuery = cb.createQuery(SimpleEntity.class);
 		Root<SimpleEntity> root = criteriaQuery.from(SimpleEntity.class);
-		ParameterExpression<Collection> parameter1 = cb.parameter(Collection.class);
-		criteriaQuery.select(root).where(root.get("id").in(parameter1));
+		criteriaQuery.select(root).where(root.get("id").in(cb.parameter(parameterType)));
 
 		TypedQuery<SimpleEntity> typedQuery = em.createQuery(criteriaQuery);
 
@@ -69,32 +74,6 @@ public class SimpleEntityTest {
 
 		for (ParameterExpression parameter : parameters) {
 			typedQuery.setParameter(parameter, Arrays.asList(23L, 42L));
-		}
-
-
-		List<SimpleEntity> result = typedQuery
-				.getResultList();
-
-		assertThat(result).hasSize(2);
-	}
-
-	@Test
-	public void inCriteriaApiWithNonEmptyIterable() {
-
-		CriteriaBuilder cb = em.getCriteriaBuilder();
-		CriteriaQuery<SimpleEntity> criteriaQuery = cb.createQuery(SimpleEntity.class);
-		Root<SimpleEntity> root = criteriaQuery.from(SimpleEntity.class);
-		ParameterExpression<Iterable> parameter1 = cb.parameter(Iterable.class);
-		criteriaQuery.select(root).where(root.get("id").in(parameter1));
-
-		TypedQuery<SimpleEntity> typedQuery = em.createQuery(criteriaQuery);
-
-
-		Set<ParameterExpression<?>> parameters = criteriaQuery.getParameters();
-		assertThat(parameters).hasSize(1);
-
-		for (ParameterExpression parameter : parameters) {
-			typedQuery.setParameter((ParameterExpression<Iterable>)parameter, Arrays.asList(23L, 42L));
 		}
 
 
