@@ -59,6 +59,26 @@ public class SimpleEntityTest {
 		runTestWithParameterType(Iterable.class);
 	}
 
+	@Test
+	public void inCriteriaApiWithNonEmptyListPlayingAround() {
+
+		CriteriaBuilder cb = em.getCriteriaBuilder();
+		CriteriaQuery<SimpleEntity> criteriaQuery = cb.createQuery(SimpleEntity.class);
+		Root<SimpleEntity> root = criteriaQuery.from(SimpleEntity.class);
+		ParameterExpression<Collection<?>> expression = (ParameterExpression<Collection<?>>)(ParameterExpression)cb.parameter( Collection.class);
+		criteriaQuery.select(root).where(root.get("id").in(expression));
+
+		TypedQuery<SimpleEntity> typedQuery = em.createQuery(criteriaQuery);
+
+
+			typedQuery.setParameter(expression, Arrays.asList(23L, 42L));
+
+		List<SimpleEntity> result = typedQuery
+				.getResultList();
+
+		assertThat(result).hasSize(2);
+	}
+
 	private void runTestWithParameterType(Class<?> parameterType) {
 
 		CriteriaBuilder cb = em.getCriteriaBuilder();

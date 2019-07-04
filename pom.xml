@@ -30,6 +30,12 @@
 
 	<profiles>
 		<profile>
+			<id>el-265</id>
+			<properties>
+				<eclipselink.version>2.6.5</eclipselink.version>
+			</properties>
+		</profile>
+		<profile>
 			<id>el-274</id>
 			<properties>
 				<eclipselink.version>2.7.4</eclipselink.version>
